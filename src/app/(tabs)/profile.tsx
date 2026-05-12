@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
-import { useAppTheme } from '../../src/hooks/useAppTheme';
-import { useStore } from '../../src/store/useStore';
-import { MOCK_USER } from '../../src/api/mocks/users';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { useStore } from '@/store/useStore';
+import { MOCK_USER } from '@/api/mocks/users';
 import { Package, Heart, CreditCard, Moon, Bell, ChevronRight, LogOut } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 

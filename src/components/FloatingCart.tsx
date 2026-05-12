@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } fr
 import { useRouter, usePathname } from 'expo-router';
 import { ShoppingBag } from 'lucide-react-native';
 import { useStore } from '../store/useStore';
-import { useAppTheme } from '../hooks/useAppTheme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 
 export const FloatingCart = () => {
   const cart = useStore(state => state.cart);

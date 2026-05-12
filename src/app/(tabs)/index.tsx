@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
-import { MOCK_PRODUCTS } from '../../src/api/mocks/products';
-import { MOCK_USER } from '../../src/api/mocks/users';
-import { ProductCard } from '../../src/components/ProductCard';
-import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { MOCK_PRODUCTS } from '@/api/mocks/products';
+import { MOCK_USER } from '@/api/mocks/users';
+import { ProductCard } from '@/components/ProductCard';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Search, ShoppingBag, Zap, Shield, Smartphone, Tag } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 

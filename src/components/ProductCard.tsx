@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable, TouchableOpacity } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Product } from '../api/mocks/products';
-import { useAppTheme } from '../hooks/useAppTheme';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { useRouter } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useStore } from '../store/useStore';

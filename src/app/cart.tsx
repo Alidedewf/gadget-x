@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Alert } from 'react-native';
-import { useStore } from '../src/store/useStore';
-import { useAppTheme } from '../src/hooks/useAppTheme';
+import { useStore } from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { Trash2, Plus, Minus, PackageOpen } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 

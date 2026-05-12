@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { MOCK_PRODUCTS } from '../../src/api/mocks/products';
-import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { MOCK_PRODUCTS } from '@/api/mocks/products';
+import { useAppTheme } from '@/hooks/useAppTheme';
 import { ArrowLeft, ShoppingBag, CheckCircle, AlertTriangle, Heart } from 'lucide-react-native';
-import { useStore } from '../../src/store/useStore';
+import { useStore } from '@/store/useStore';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();

@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
-import { MOCK_PRODUCTS, MOCK_PHONE_MODELS } from '../../src/api/mocks/products';
-import { useStore } from '../../src/store/useStore';
-import { useAppTheme } from '../../src/hooks/useAppTheme';
-import { ProductCard } from '../../src/components/ProductCard';
+import { MOCK_PRODUCTS, MOCK_PHONE_MODELS } from '@/api/mocks/products';
+import { useStore } from '@/store/useStore';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { ProductCard } from '@/components/ProductCard';
 import { useState, useMemo } from 'react';
 import { Search, SlidersHorizontal, ArrowUpDown, XCircle } from 'lucide-react-native';
 
