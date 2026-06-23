@@ -3,8 +3,6 @@ import { Home, Search, Heart, User, Moon, Sun } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { TouchableOpacity, Platform } from 'react-native';
 import { useStore } from '@/store/useStore';
-import { BlurView } from 'expo-blur';
-import { StyleSheet } from 'react-native';
 
 export default function TabLayout() {
   const { c, theme } = useAppTheme();

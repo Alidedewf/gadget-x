@@ -3,6 +3,8 @@ import { useStore } from '@/store/useStore';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { Trash2, Plus, Minus, PackageOpen } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { formatPrice } from '@/utils/currency';
+import * as Haptics from 'expo-haptics';
 
 export default function CartScreen() {
   const { cart, removeFromCart, increaseQuantity, decreaseQuantity, getCartTotal, clearCart } = useStore();
@@ -10,20 +12,7 @@ export default function CartScreen() {
   const router = useRouter();
 
   const handleCheckout = () => {
-    // Имитация отправки данных на мифический бекенд
-    Alert.alert(
-      "Успех! Заказ оформлен",
-      `Данные отправлены на обработку. Итоговая сумма составляла $${getCartTotal().toFixed(2)}. Для MVP корзина будет очищена.`,
-      [
-        { 
-          text: "Отлично", 
-          onPress: () => {
-             clearCart();
-             router.push('/');
-          }
-        }
-      ]
-    );
+    router.push('/checkout');
   };
 
   if (cart.length === 0) {
@@ -36,7 +25,7 @@ export default function CartScreen() {
         </Text>
         <TouchableOpacity 
           style={[styles.catalogButton, { backgroundColor: c.primary }]}
-          onPress={() => router.push('/catalog')}
+          onPress={() => router.replace('/(tabs)/catalog')}
           activeOpacity={0.8}
         >
           <Text style={styles.catalogButtonText}>Перейти в каталог</Text>
@@ -55,8 +44,7 @@ export default function CartScreen() {
         contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 160 }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
-          // Конвертим цену из тенге в баксы для демки, как решили ранее
-          const numPrice = parseFloat(item.price.toString().replace(/\s/g, '')) / 450;
+          const itemTotal = item.price * item.quantity;
           return (
             <View style={[styles.cartItem, { backgroundColor: c.surface, borderColor: c.border }]}>
               
@@ -65,24 +53,23 @@ export default function CartScreen() {
               <View style={styles.info}>
                 <Text style={[styles.title, { color: c.text }]} numberOfLines={2}>{item.title}</Text>
                 
-                {/* Сумма отдельного товара зависит от Количества */}
                 <Text style={[styles.price, { color: c.primary }]}>
-                  ${(numPrice * item.quantity).toFixed(2)}
+                  {formatPrice(itemTotal)}
                 </Text>
                 
                 {/* Controllers: Minus | Quantity | Plus | Trash */}
                 <View style={styles.controllerRow}>
                   <View style={[styles.quantityBox, { borderColor: c.border }]}>
-                    <TouchableOpacity onPress={() => decreaseQuantity(item.id)} style={styles.qtyBtn}>
+                    <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); decreaseQuantity(item.id); }} style={styles.qtyBtn}>
                       <Minus size={16} color={c.text} />
                     </TouchableOpacity>
                     <Text style={[styles.qtyText, { color: c.text }]}>{item.quantity}</Text>
-                    <TouchableOpacity onPress={() => increaseQuantity(item.id)} style={styles.qtyBtn}>
+                    <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); increaseQuantity(item.id); }} style={styles.qtyBtn}>
                       <Plus size={16} color={c.text} />
                     </TouchableOpacity>
                   </View>
                   
-                  <TouchableOpacity onPress={() => removeFromCart(item.id)} style={styles.deleteBtn}>
+                  <TouchableOpacity onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); removeFromCart(item.id); }} style={styles.deleteBtn}>
                     <Trash2 size={20} color="#ef4444" />
                   </TouchableOpacity>
                 </View>
@@ -97,7 +84,7 @@ export default function CartScreen() {
       <View style={[styles.footer, { backgroundColor: c.surface, borderTopColor: c.border }]}>
         <View style={styles.totalRow}>
           <Text style={[styles.totalLabel, { color: c.textMuted }]}>Итого:</Text>
-          <Text style={[styles.totalPrice, { color: c.text }]}>${getCartTotal().toFixed(2)}</Text>
+          <Text style={[styles.totalPrice, { color: c.text }]}>{formatPrice(getCartTotal())}</Text>
         </View>
         
         <TouchableOpacity style={[styles.checkoutBtn, { backgroundColor: c.primary }]} onPress={handleCheckout} activeOpacity={0.8}>

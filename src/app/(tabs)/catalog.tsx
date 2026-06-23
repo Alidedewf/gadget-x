@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import { MOCK_PRODUCTS, MOCK_PHONE_MODELS } from '@/api/mocks/products';
 import { useStore } from '@/store/useStore';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { ProductCard } from '@/components/ProductCard';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Search, SlidersHorizontal, ArrowUpDown, XCircle } from 'lucide-react-native';
 
 type SortMode = 'default' | 'price_asc' | 'price_desc' | 'rating' | 'discount';
@@ -16,21 +16,44 @@ const SORT_OPTIONS: { key: SortMode; label: string }[] = [
   { key: 'discount', label: 'Скидки' },
 ];
 
+const CATEGORIES = [
+  'Все',
+  'Чехлы',
+  'Зарядки',
+  'Наушники',
+  'Кабели',
+  'Защитные стёкла',
+  'Подставки и держатели',
+  'Умные аксессуары',
+];
+
 export default function CatalogScreen() {
   const { selectedPhoneModelId, setSelectedPhoneModelId } = useStore();
   const { c, theme } = useAppTheme();
   const [query, setQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('default');
+  const [activeCategory, setActiveCategory] = useState('Все');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = MOCK_PRODUCTS;
+
+    // Фильтр по категории
+    if (activeCategory !== 'Все') {
+      result = result.filter(p => p.category === activeCategory);
+    }
 
     // Фильтр по выбранному устройству
     if (selectedPhoneModelId) {
       result = result.filter(p => p.isUniversal || p.compatibleModels.includes(selectedPhoneModelId));
     }
 
-    // Фильтр по поисковому запросу - применяем только если запрос не пустой
+    // Фильтр по поисковому запросу
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       result = result.filter(p =>
@@ -53,7 +76,7 @@ export default function CatalogScreen() {
     });
 
     return result;
-  }, [selectedPhoneModelId, query, sortMode]);
+  }, [selectedPhoneModelId, query, sortMode, activeCategory]);
 
   // ⚠️ КРИТИЧНО: stickyHeader — это JSX-переменная, а НЕ компонент.
   // Если объявить как const StickyHeader = () => (...) и вызвать как <StickyHeader />,
@@ -77,6 +100,30 @@ export default function CatalogScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Категории */}
+      <FlatList
+        data={CATEGORIES}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={item => item}
+        style={styles.catRow}
+        renderItem={({ item }) => {
+          const isActive = activeCategory === item;
+          return (
+            <TouchableOpacity
+              style={[styles.catPill, {
+                backgroundColor: isActive ? c.primary : 'transparent',
+                borderColor: isActive ? c.primary : c.border,
+              }]}
+              onPress={() => setActiveCategory(item)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.catText, { color: isActive ? '#fff' : c.text }]}>{item}</Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
 
       {/* Выбор устройства */}
       <FlatList
@@ -131,14 +178,14 @@ export default function CatalogScreen() {
       {/* Результат */}
       <View style={styles.resultRow}>
         <Text style={[styles.resultText, { color: c.textMuted }]}>
-          {query.trim() 
-            ? `"${query}" — ${filteredProducts.length} товаров` 
-            : selectedPhoneModelId 
-              ? `${filteredProducts.length} товаров совместимо` 
+          {query.trim()
+            ? `"${query}" — ${filteredProducts.length} товаров`
+            : selectedPhoneModelId
+              ? `${filteredProducts.length} товаров совместимо`
               : `Все товары (${filteredProducts.length})`}
         </Text>
-        {(query.trim() || selectedPhoneModelId) && (
-          <TouchableOpacity onPress={() => { setQuery(''); setSelectedPhoneModelId(null); }}>
+        {(query.trim() || selectedPhoneModelId || activeCategory !== 'Все') && (
+          <TouchableOpacity onPress={() => { setQuery(''); setSelectedPhoneModelId(null); setActiveCategory('Все'); }}>
             <Text style={{ color: c.primary, fontWeight: '700', fontSize: 13 }}>Сбросить</Text>
           </TouchableOpacity>
         )}
@@ -159,6 +206,14 @@ export default function CatalogScreen() {
         columnWrapperStyle={styles.columnWrapper}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={c.primary}
+            colors={[c.primary]}
+          />
+        }
         renderItem={({ item }) => <ProductCard product={item} />}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -179,6 +234,9 @@ const styles = StyleSheet.create({
   stickyHeader: { paddingTop: 15, paddingHorizontal: 15, paddingBottom: 10 },
   searchBar: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, paddingHorizontal: 15, paddingVertical: 12, gap: 10, marginBottom: 12 },
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
+  catRow: { marginBottom: 10 },
+  catPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, borderWidth: 1 },
+  catText: { fontSize: 13, fontWeight: '600' },
   modelsRow: { marginBottom: 10 },
   modelBadge: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8, justifyContent: 'center', borderWidth: 1 },
   modelText: { fontSize: 13, fontWeight: '600' },

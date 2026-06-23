@@ -4,8 +4,10 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { Product } from '../api/mocks/products';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useRouter } from 'expo-router';
-import { Heart } from 'lucide-react-native';
+import { Heart, Star, Plus } from 'lucide-react-native';
 import { useStore } from '../store/useStore';
+import { formatPrice } from '@/utils/currency';
+import * as Haptics from 'expo-haptics';
 
 interface ProductCardProps {
   product: Product;
@@ -26,12 +28,8 @@ export const ProductCard = ({ product, onPress }: ProductCardProps) => {
   const handlePressIn = () => { scale.value = withSpring(0.97, { damping: 20 }); };
   const handlePressOut = () => { scale.value = withSpring(1, { damping: 20 }); };
 
-  const dollarPrice = parseFloat(product.price.toString().replace(/ /g, '')) / 450;
-  const dollarOldPrice = product.oldPrice
-    ? parseFloat(product.oldPrice.toString().replace(/ /g, '')) / 450
-    : null;
-  const discountPct = dollarOldPrice
-    ? Math.round((1 - dollarPrice / dollarOldPrice) * 100)
+  const discountPct = product.oldPrice
+    ? Math.round((1 - product.price / product.oldPrice) * 100)
     : null;
 
   const isNew = !discountPct && product.rating >= 4.8 && product.reviewsCount > 300;
@@ -66,7 +64,7 @@ export const ProductCard = ({ product, onPress }: ProductCardProps) => {
           {/* Сердечко — правый верхний угол */}
           <TouchableOpacity
             style={[styles.heartBtn, { backgroundColor: theme === 'light' ? '#fff' : '#2e1065' }]}
-            onPress={(e) => { e.stopPropagation(); toggleFavorite(product.id); }}
+            onPress={(e) => { e.stopPropagation(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(product.id); }}
             hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           >
             <Heart
@@ -74,6 +72,18 @@ export const ProductCard = ({ product, onPress }: ProductCardProps) => {
               fill={isFavorite ? '#ef4444' : 'transparent'}
               size={16}
             />
+          </TouchableOpacity>
+          {/* Quick-add кнопка */}
+          <TouchableOpacity
+            style={[styles.quickAddBtn, { backgroundColor: c.primary }]}
+            onPress={(e) => {
+              e.stopPropagation();
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              addToCart(product);
+            }}
+            hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+          >
+            <Plus color="#fff" size={16} strokeWidth={3} />
           </TouchableOpacity>
         </View>
 
@@ -85,13 +95,21 @@ export const ProductCard = ({ product, onPress }: ProductCardProps) => {
 
           <View style={styles.priceRow}>
             <Text style={[styles.price, { color: c.primary }]}>
-              ${dollarPrice.toFixed(2)}
+              {formatPrice(product.price)}
             </Text>
-            {dollarOldPrice && (
+            {product.oldPrice && (
               <Text style={[styles.oldPrice, { color: c.textMuted }]}>
-                ${dollarOldPrice.toFixed(2)}
+                {formatPrice(product.oldPrice)}
               </Text>
             )}
+          </View>
+
+          {/* Рейтинг */}
+          <View style={styles.ratingRow}>
+            <Star size={12} color="#facc15" fill="#facc15" />
+            <Text style={[styles.ratingText, { color: c.textMuted }]}>
+              {product.rating} · {product.reviewsCount} отзывов
+            </Text>
           </View>
         </View>
 
@@ -158,4 +176,25 @@ const styles = StyleSheet.create({
   },
   price: { fontSize: 15, fontWeight: '900' },
   oldPrice: { fontSize: 12, textDecorationLine: 'line-through', marginTop: 1 },
+
+  // Рейтинг
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  ratingText: { fontSize: 11, fontWeight: '500' },
+
+  // Quick-add
+  quickAddBtn: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
+  },
 });

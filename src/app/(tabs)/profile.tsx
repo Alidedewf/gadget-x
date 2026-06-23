@@ -43,7 +43,7 @@ export default function ProfileScreen() {
       {/* SECTION: ORDERS & ACCOUNT */}
       <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Опции аккаунта</Text>
       <View style={[styles.sectionBlock, { backgroundColor: c.surface, borderColor: c.border }]}>
-        {renderSettingItem(<Package color={c.text} size={20} />, "Мои заказы", null)}
+        {renderSettingItem(<Package color={c.text} size={20} />, "Мои заказы", null, () => router.push('/orders'))}
         {renderSettingItem(<Heart color={c.text} size={20} />, "Избранное", null, () => router.push('/favorites'))}
         {renderSettingItem(<CreditCard color={c.text} size={20} />, "Привязанные карты", null)}
       </View>

@@ -2,8 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { MOCK_PRODUCTS } from '@/api/mocks/products';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { ArrowLeft, ShoppingBag, CheckCircle, AlertTriangle, Heart } from 'lucide-react-native';
+import { ArrowLeft, ShoppingBag, CheckCircle, AlertTriangle, Heart, Star } from 'lucide-react-native';
 import { useStore } from '@/store/useStore';
+import { formatPrice } from '@/utils/currency';
+import * as Haptics from 'expo-haptics';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -23,7 +25,7 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const dollarPrice = (parseFloat(product.price.toString().replace(/\s/g, '')) / 450).toFixed(2);
+  const dollarPrice = formatPrice(product.price);
 
   // Используем наш корпоративный цвет для фона под фото
   const topBgColor = theme === 'light' ? c.primaryMuted : c.background;
@@ -36,7 +38,7 @@ export default function ProductDetailScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ArrowLeft color={theme === 'light' ? '#000' : '#fff'} size={28} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => toggleFavorite(id as string)} style={styles.favButton}>
+        <TouchableOpacity onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id as string); }} style={styles.favButton}>
           <Heart color={isFavorite ? '#ef4444' : (theme === 'light' ? '#000' : '#fff')} fill={isFavorite ? '#ef4444' : 'transparent'} size={28} />
         </TouchableOpacity>
       </View>
@@ -55,6 +57,20 @@ export default function ProductDetailScreen() {
             {product.description}
           </Text>
 
+          {/* Рейтинг */}
+          <View style={styles.ratingRow}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <Star
+                key={i}
+                size={18}
+                color="#facc15"
+                fill={i <= Math.round(product.rating) ? '#facc15' : 'transparent'}
+              />
+            ))}
+            <Text style={[styles.ratingValue, { color: c.text }]}>{product.rating}</Text>
+            <Text style={[styles.reviewsCount, { color: c.textMuted }]}>({product.reviewsCount} отзывов)</Text>
+          </View>
+
           {/* Compatibility Hint */}
           <View style={[styles.hintBox, { borderColor: c.border, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
              {product.isUniversal ? <CheckCircle size={20} color={c.success} /> : <AlertTriangle size={20} color="#f59e0b" />}
@@ -65,12 +81,12 @@ export default function ProductDetailScreen() {
 
           {/* BOTTOM ROW (Price + Button) */}
           <View style={styles.actionRow}>
-            <Text style={[styles.price, { color: c.text }]}>${dollarPrice}</Text>
+            <Text style={[styles.price, { color: c.text }]}>{dollarPrice}</Text>
             
             <TouchableOpacity 
               style={[styles.addButton, { backgroundColor: c.primary }]}
               activeOpacity={0.8}
-              onPress={() => addToCart(product)}
+              onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); addToCart(product); }}
             >
               <Text style={[styles.addButtonText, { color: '#fff' }]}>В корзину</Text>
               <ShoppingBag color="#fff" size={18} />
@@ -90,7 +106,7 @@ export default function ProductDetailScreen() {
                 <View style={{ padding: 10 }}>
                   <Text style={[styles.recCardTitle, { color: c.text }]} numberOfLines={2}>{recommended.title}</Text>
                   <Text style={[styles.recPrice, { color: c.text }]}>
-                    ${(parseFloat(recommended.price.toString().replace(/\s/g, '')) / 450).toFixed(2)}
+                    {formatPrice(recommended.price)}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -125,4 +141,7 @@ const styles = StyleSheet.create({
   recImage: { width: '100%', height: 100, backgroundColor: 'rgba(0,0,0,0.02)', resizeMode: 'cover' },
   recCardTitle: { fontSize: 12, fontWeight: '600', marginBottom: 4, height: 32 },
   recPrice: { fontSize: 14, fontWeight: '900' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 20 },
+  ratingValue: { fontSize: 16, fontWeight: '800', marginLeft: 6 },
+  reviewsCount: { fontSize: 14, fontWeight: '500' },
 });

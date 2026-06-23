@@ -1,11 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, RefreshControl } from 'react-native';
 import { MOCK_PRODUCTS } from '@/api/mocks/products';
 import { MOCK_USER } from '@/api/mocks/users';
 import { ProductCard } from '@/components/ProductCard';
+import { SkeletonGrid } from '@/components/SkeletonCard';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useStore } from '@/store/useStore';
 import { Search, ShoppingBag, Zap, Shield, Smartphone, Tag } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
+
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -50,11 +53,31 @@ const CATEGORIES = [
 ];
 
 export default function HomeScreen() {
-  const { c, theme } = useAppTheme();
+  const { c } = useAppTheme();
   const router = useRouter();
+  const { hasSeenOnboarding } = useStore();
   const [activeCategory, setActiveCategory] = useState('Все');
   const [bannerIndex, setBannerIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const bannerRef = useRef<FlatList>(null);
+
+  // Онбординг при первом запуске
+  if (!hasSeenOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
+
+
+  // Имитация загрузки для скелетонов
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
 
   // Автопрокрутка баннера каждые 3.5 секунды
   useEffect(() => {
@@ -84,6 +107,14 @@ export default function HomeScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={c.primary}
+          colors={[c.primary]}
+        />
+      }
     >
       {/* ── ШАПКА ── */}
       <View style={styles.header}>
@@ -182,7 +213,14 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* ── ПОПУЛЯРНЫЕ ── */}
-      {popular.length > 0 && (
+      {isLoading ? (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: c.text }]}>Популярные</Text>
+          </View>
+          <SkeletonGrid count={6} />
+        </View>
+      ) : popular.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: c.text }]}>Популярные</Text>
@@ -200,7 +238,7 @@ export default function HomeScreen() {
       )}
 
       {/* ── СО СКИДКОЙ ── */}
-      {discounted.length > 0 && (
+      {!isLoading && discounted.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

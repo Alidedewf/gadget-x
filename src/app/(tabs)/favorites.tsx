@@ -29,6 +29,8 @@ export default function FavoritesScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           contentContainerStyle={styles.list}
+          columnWrapperStyle={styles.columnWrapper}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <ProductCard product={item} />}
         />
       )}
@@ -37,9 +39,10 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 15, paddingHorizontal: 10 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 25, paddingHorizontal: 6 },
-  list: { paddingBottom: 100 }, 
+  container: { flex: 1, paddingTop: 15 },
+  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 25, paddingHorizontal: 16 },
+  list: { paddingHorizontal: 12, paddingBottom: 100 },
+  columnWrapper: { justifyContent: 'space-between', gap: 12 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30, marginTop: 50 },
   emptyTitle: { fontSize: 24, fontWeight: '800', marginBottom: 10 },
   emptySubtitle: { fontSize: 16, textAlign: 'center', lineHeight: 24 },

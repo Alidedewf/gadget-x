@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { ShoppingBag } from 'lucide-react-native';
 import { useStore } from '../store/useStore';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { formatPrice } from '@/utils/currency';
 
 export const FloatingCart = () => {
   const cart = useStore(state => state.cart);
@@ -14,7 +15,7 @@ export const FloatingCart = () => {
   const pathname = usePathname();
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalPrice = getCartTotal().toFixed(2);
+  const totalPrice = formatPrice(getCartTotal());
   const isCartScreen = pathname === '/cart';
 
   // Плавная анимация появления снизу
@@ -48,7 +49,7 @@ export const FloatingCart = () => {
         activeOpacity={0.9}
       >
         <View style={styles.priceContainer}>
-          <Text style={[styles.priceText, { color: c.text }]}>${totalPrice}</Text>
+          <Text style={[styles.priceText, { color: c.text }]}>{totalPrice}</Text>
         </View>
 
         <View style={[styles.iconContainer, { backgroundColor: c.primary }]}>
